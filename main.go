@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/stianeikeland/go-rpio/v4"
@@ -45,17 +48,25 @@ func main() {
 		panic(err.Error())
 		return
 	}
+	timer_tem := time.NewTimer(time_refint_dur)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
-		temp := getCPUTemp()
-		println("current_temp_is:" + strconv.FormatFloat(temp, 'f', -1, 32))
-		if temp >= temp_max_float {
-			pin_io.Output()
-			println("fans is ON")
-		} else if temp <= temp_mix_float {
-			pin_io.Input()
-			println("fans is OFF")
+		select {
+		case <-timer_tem.C:
+			temp := getCPUTemp()
+			println("current_temp_is:" + strconv.FormatFloat(temp, 'f', -1, 32))
+			if temp >= temp_max_float {
+				pin_io.Mode(rpio.Output)
+				println("fans is ON")
+			} else if temp <= temp_mix_float {
+				pin_io.Mode(rpio.Input)
+				println("fans is OFF")
+			}
+			timer_tem.Reset(time_refint_dur)
+		case <-sigs:
+			rpio.Close()
 		}
-		time.Sleep(time_refint_dur)
 	}
 }
 func getCPUTemp() float64 {
