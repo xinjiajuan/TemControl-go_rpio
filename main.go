@@ -51,21 +51,29 @@ func main() {
 	timer_tem := time.NewTimer(time_refint_dur)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	var fan_ON bool
 	for {
 		select {
 		case <-timer_tem.C:
 			temp := getCPUTemp()
 			println("current_temp_is:" + strconv.FormatFloat(temp, 'f', -1, 32))
 			if temp >= temp_max_float {
-				pin_io.Mode(rpio.Output)
-				println("fans is ON")
+				if !fan_ON {
+					pin_io.Mode(rpio.Output)
+					fan_ON = true
+					println("fan is ON")
+				}
 			} else if temp <= temp_mix_float {
-				pin_io.Mode(rpio.Input)
-				println("fans is OFF")
+				if fan_ON {
+					pin_io.Mode(rpio.Input)
+					fan_ON = false
+					println("fan is OFF")
+				}
 			}
 			timer_tem.Reset(time_refint_dur)
 		case <-sigs:
 			rpio.Close()
+			os.Exit(0)
 		}
 	}
 }
