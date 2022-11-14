@@ -26,6 +26,10 @@ func main() {
 		return
 	}
 	pin_io := rpio.Pin(pin)
+	if err := rpio.Open(); err != nil {
+		panic(err.Error())
+		return
+	}
 	temp_mix_float, err := strconv.ParseFloat(temp_mix, 32)
 	if err != nil {
 		panic(err.Error())
