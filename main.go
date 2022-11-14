@@ -15,7 +15,12 @@ import (
 )
 
 func main() {
-	cfg, err := ini.Load("conf.ini")
+	arg := os.Args
+	if len(arg) != 2 {
+		println("请指定配置文件\n格式:temcontrol xxx.ini")
+		return
+	}
+	cfg, err := ini.Load(arg[1])
 	if err != nil {
 		panic(err.Error())
 		return
