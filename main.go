@@ -71,5 +71,5 @@ func getCPUTemp() float64 {
 		panic(err.Error())
 		return 0
 	}
-	return temp
+	return temp / 1000
 }
