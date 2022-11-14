@@ -50,8 +50,10 @@ func main() {
 		println("current_temp_is:" + strconv.FormatFloat(temp, 'f', -1, 32))
 		if temp >= temp_max_float {
 			pin_io.Output()
+			println("fans is ON")
 		} else if temp <= temp_mix_float {
 			pin_io.Input()
+			println("fans is OFF")
 		}
 		time.Sleep(time_refint_dur)
 	}
